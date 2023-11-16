@@ -65,7 +65,8 @@ fi
 
 print_header "2. Downloading and extracting Azure Pipelines agent..."
 
-curl -LsS "${AZP_AGENT_PACKAGE_LATEST_URL}" | tar -xz & wait $!
+echo "${AZP_AGENT_PACKAGE_LATEST_URL}" 
+curl -LsS "${AZP_AGENT_PACKAGE_LATEST_URL}" --insecure | tar -xz & wait $!
 
 source ./env.sh
 
@@ -91,4 +92,7 @@ chmod +x ./run.sh
 
 # To be aware of TERM and INT signals call ./run.sh
 # Running it with the --once flag at the end will shut down the agent after the build is executed
-./run.sh "$@" & wait $!
+./run.sh --once "$@" & wait $!
+
+# Add the following line to grant read/write permission to a folder for the current user
+chmod -R +rw /home/agent/
