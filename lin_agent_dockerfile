@@ -2,9 +2,15 @@ FROM ubuntu:22.04
 
 WORKDIR /azp/
 
-RUN apt update
-RUN apt upgrade -y
-RUN apt install -y --no-install-recommends curl git jq libicu70 git ca-certificates sudo
+RUN apt update && \
+    apt upgrade -y && \
+    apt install -y --no-install-recommends curl git jq libicu70 git ca-certificates sudo
+
+# Install PowerShell
+RUN curl -L https://aka.ms/install-powershell.sh -o install-powershell.sh && \
+    chmod +x install-powershell.sh && \
+    sudo ./install-powershell.sh && \
+    rm install-powershell.sh
 
 ENV TARGETARCH="linux-x64"
 
