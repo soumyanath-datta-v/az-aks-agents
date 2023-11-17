@@ -6,17 +6,18 @@ RUN apt update && \
     apt upgrade -y && \
     apt install -y --no-install-recommends curl git jq libicu70 git ca-certificates sudo
 
-# Install PowerShell
-RUN curl -L https://aka.ms/install-powershell.sh -o install-powershell.sh && \
-    chmod +x install-powershell.sh && \
-    sudo ./install-powershell.sh && \
-    rm install-powershell.sh
+COPY certificates/*.crt /certs/
+RUN sudo cp /certs/*.crt /usr/local/share/ca-certificates/
+RUN sudo update-ca-certificates
 
 ENV TARGETARCH="linux-x64"
 
 COPY ./start.sh ./
 RUN chmod +x ./start.sh
 
-ENV AGENT_ALLOW_RUNASROOT="true"
+RUN useradd agent
+RUN chown agent ./
+RUN chmod u+rw /home
+USER Agent
 
 ENTRYPOINT ./start.sh
