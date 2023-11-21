@@ -17,7 +17,7 @@ RUN chmod +x ./start.sh
 
 RUN useradd agent
 RUN chown agent ./
-RUN chmod u+rw /home
+RUN chmod u+rw /home/agent
 USER Agent
 
 ENTRYPOINT ./start.sh
