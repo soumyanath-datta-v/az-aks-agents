@@ -1,3 +1,17 @@
 jobs:
 - job: InstallPowerShell
-	
+  pool:
+    vmImage: 'your-linux-vm-image'
+
+  steps:
+  - powershell: |
+      # Install PowerShell on Linux
+      wget -q https://packages.microsoft.com/config/ubuntu/$(lsb_release -rs)/packages-microsoft-prod.deb
+      sudo dpkg -i packages-microsoft-prod.deb
+      sudo apt-get update
+      sudo apt-get install -y powershell
+    displayName: 'Install PowerShell'
+
+  - script: |
+      pwsh -Command "Write-Host 'Hello, PowerShell!'"
+    displayName: 'Run PowerShell Script'
