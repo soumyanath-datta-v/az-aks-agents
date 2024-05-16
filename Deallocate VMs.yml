@@ -1,0 +1,47 @@
+# Starter pipeline
+# Start with a minimal pipeline that you can customize to build and deploy your code.
+# Add steps that build, run tests, deploy, and more:
+# https://aka.ms/yaml
+
+trigger:
+- master
+
+schedules:
+- cron: "0 15 * * *"  # Runs daily at 8pm IST (15:00 UTC)
+  displayName: Daily at 8pm IST
+  branches:
+    include:
+    - master
+
+pool:
+  vmImage: ubuntu-latest
+
+steps:
+- script: |
+    #!/bin/bash
+
+    # Define your Azure resource group name
+    resource_group="<your_resource_group_name>"
+    client_id="<your_client_id>"
+    secret="<secret>"
+    tenant="<tenantid>"
+
+    # Get a list of VM names in the specified resource group
+    vm_names=$(VM NAMES GO HERE)
+
+    az login --service-principal --username $client_id --password $secret --tenant $tenant
+
+    # Loop through each VM and deallocate if it's running
+    for vm_name in $vm_names; do
+        echo "Checking status of VM '$vm_name'..."
+        vm_status=$(az vm get-instance-view -g $resource_group -n $vm_name --query "instanceView.statuses[?code=='PowerState/running'].code" -o tsv)
+
+        if [ "$vm_status" == "PowerState/running" ]; then
+            echo "Deallocating VM '$vm_name'..."
+            az vm deallocate -g $resource_group -n $vm_name --no-wait
+            echo "VM '$vm_name' has been deallocated."
+        else
+            echo "VM '$vm_name' is not running. Skipping deallocation."
+        fi
+    done
+  displayName: 'Deallocate VMs'
