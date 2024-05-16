@@ -11,7 +11,8 @@ RUN apt-get update && apt-get install --no-install-recommends -y \
 	jq \
 	libicu70 \
 	ca-certificates \
-	wget
+	wget \
+	nano
 	
 RUN curl -fsSL https://download.docker.com/linux/ubuntu/gpg | apt-key add -
 RUN apt-key fingerprint 0EBFCD88
@@ -27,7 +28,7 @@ RUN mkdir /home/agent
 # create new user 
 RUN useradd agent
 RUN chown -R agent /home/agent
-RUN chmod u+rw /home/agent
+RUN chmod -R u+rw /home/agent
 
 WORKDIR /home/agent/
 
@@ -37,4 +38,26 @@ RUN usermod -aG docker agent
 RUN newgrp docker
 
 # install pwsh 
-RUN 
+RUN curl -O https://packages.microsoft.com/config/ubuntu/22.04/packages-microsoft-prod.deb
+RUN dpkg -i packages-microsoft-prod.deb
+RUN rm packages-microsoft-prod.deb
+RUN apt-get update && apt-get install -y --no-install-recommends powershell
+
+# install az cli
+curl -sL https://aka.ms/InstallAzureCLIDeb | bash
+
+# install ADO agent 
+RUN curl -O https://vstsagentpackage.azureedge.net/agent/3.238.0/vsts-agent-linux-x64-3.238.0.tar.gz
+RUN tar zxf vsts-agent-linux-x64-3.238.0.tar.gz
+# switch to user agent
+USER agent
+RUN chmod +x ./config.sh
+RUN ./config.sh --unattended \
+	--url https://dev.azure.com/vialto \
+	--auth pat \
+	--token  \
+	--pool 'test-pool' \
+	--acceptTeeEula & wait $!
+RUN chmod +x ./run.sh
+RUN ./run.sh
+	
